@@ -1,9 +1,9 @@
-import './adduser.css'
+import './addUser.css';
 import { db } from '../../../../lib/firebase';
 import { arrayUnion, collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import React from 'react';
 import { useUserStore } from '../../../../lib/userStore';
-import { use } from 'react';
+
 
 const Adduser = () => {
     const [user, setUser] = React.useState(null);
