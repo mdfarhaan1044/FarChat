@@ -32,6 +32,28 @@
             height: 20px;
             cursor: pointer;
         }
+
+
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: rgba(228, 47, 47, 0.664);
+        color: white;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+
+
+        &.logout {
+            background-color: rgba(62, 62, 207, 0.699);
+
+
+            &:hover {
+                background-color: rgb(62, 62, 207);
+            }
+        }
     }
 
 }

@@ -80,6 +80,7 @@
             gap: 20px;
 
             &.own {
+
                 align-self: flex-end;
 
                 .texts {
@@ -163,6 +164,12 @@
             border-radius: 10px;
             outline: none;
             color: white;
+
+
+            &:disabled {
+                cursor: not-allowed;
+
+            }
         }
 
         .emoji {
@@ -182,7 +189,45 @@
             cursor: pointer;
             background-color: lightblue;
             border-radius: 10px;
+
+
+            &:disabled {
+                cursor: not-allowed;
+                background-color: rgba(173, 216, 230, 0.5);
+            }
         }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .image-wrapper img {
+            max-width: 250px;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .download-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+
 
     }
 }

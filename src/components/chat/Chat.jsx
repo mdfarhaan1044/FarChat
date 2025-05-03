@@ -15,7 +15,7 @@ const Chat = () => {
         file: null,
         url: ""
     });
-    const { chatId, user } = useChatStore();
+    const { chatId, user, isCurrentUserBlocked, isReceiverBlocked, } = useChatStore();
     const { currentUser } = useUserStore();
 
     const endRef = useRef(null);
@@ -34,6 +34,33 @@ const Chat = () => {
             unSub();
         }
     }, [chatId])
+
+    useEffect(() => {
+        const markSeen = async () => {
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
+
+            if (!chatSnap.exists()) return;
+
+            const data = chatSnap.data();
+            let updated = false;
+
+            const updatedMessages = data.messages.map((m) => {
+                if (!m.isSeen && m.senderId !== currentUser.id) {
+                    updated = true;
+                    return { ...m, isSeen: true };
+                }
+                return m;
+            });
+
+            if (updated) {
+                await updateDoc(chatRef, { messages: updatedMessages });
+            }
+        };
+
+        if (chatId) markSeen();
+    }, [chatId]);
+
 
     console.log(chat);
 
@@ -67,6 +94,7 @@ const Chat = () => {
                     senderId: currentUser.id,
                     text,
                     createdAt: new Date(),
+                    isSeen: false,
                     ...(imgUrl && { img: imgUrl }),
                 })
             });
@@ -121,33 +149,58 @@ const Chat = () => {
 
             <div className="top">
                 <div className="user">
-                    <img src="./avatar.png" alt="" />
+                    <img src={user?.avatar || "./avatar.png"} alt="" />
                     <div className="texts">
-                        <h2>John Doe</h2>
-                        <p>Lorem, ipsum dolor sit amet. </p>
+                        <h2>{user?.username}</h2>
+                        {/* <p>Lorem, ipsum dolor sit amet. </p> */}
                     </div>
                     <div className="icons">
-                        <img src="./phone.png" alt="" />
+                        {/* <img src="./phone.png" alt="" />
                         <img src="./video.png" alt="" />
-                        <img src="./info.png" alt="" />
+                        <img src="./info.png" alt="" /> */}
                     </div>
                 </div>
 
             </div>
             <div className="center">
-                {chat?.messages.map((message) => (
-                    <div className={message.senderId === currentUser.id ? "message own" : "message"} key={message?.createdAt}>
+                {chat?.messages.map((message, index) => {
+                    const isOwnMessage = message.senderId === currentUser.id;
+                    return (
+                        <div className={isOwnMessage ? "message own" : "message"} key={index}>
+                            <div className="texts">
+                                {message.img && (
+                                    <div className="image-wrapper">
+                                        <img src={message.img} alt="" />
+                                        <a
+                                            href={message.img}
+                                            download={`image_${message.createdAt?.seconds || Date.now()}.jpg`}
+                                            className="download-btn"
+                                        >
+                                            ⬇
+                                        </a>
+                                    </div>
+                                )}
+                                {message.text && <p>{message.text}</p>}
+                                {message.createdAt?.seconds && (
+                                    <span className="time-seen">
+                                        {new Date(message.createdAt?.seconds * 1000).toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                        {message.senderId === currentUser.id && (
+                                            <span className={`ticks ${message.isSeen ? 'seen' : ''}`}>
+                                                {message.isSeen ? '✓✓' : '✓'}
+                                            </span>
+                                        )}
+                                    </span>
 
-
-                        <div className="texts">
-                            {message.img && <img src={message.img} alt="" />}
-                            <p>
-                                {message.text}
-                            </p>
-                            {/* <span>1 min ago</span> */}
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
+
+
 
                 {img.url && <div className="message own ">
                     <div className="texts">
@@ -173,13 +226,14 @@ const Chat = () => {
                     </label>
 
                     <input type="file" id='file' style={{ display: "none" }} onChange={handleImg} />
-                    <img src="./camera.png" alt="" />
-                    <img src="./mic.png" alt="" />
+                    {/* <img src="./camera.png" alt="" />
+                    <img src="./mic.png" alt="" /> */}
                 </div>
 
-                <input type="text" placeholder='Type your message...'
+                <input type="text" placeholder={isCurrentUserBlocked || isReceiverBlocked ? "You can't send message" : 'Type your message...'}
                     value={text}
-                    onChange={(e) => setText(e.target.value)} />
+                    onChange={(e) => setText(e.target.value)}
+                    disabled={isCurrentUserBlocked || isReceiverBlocked} />
                 <div className="emoji">
                     <img src="./emoji.png" alt=""
                         onClick={() => setOpen((prev) => !prev)} />
@@ -189,7 +243,7 @@ const Chat = () => {
 
                 </div>
 
-                <button className='sendButton' onClick={handleSend}>Send</button>
+                <button className='sendButton' onClick={handleSend} disabled={isCurrentUserBlocked || isReceiverBlocked}>Send</button>
 
 
 
