@@ -2,7 +2,21 @@ import React from 'react';
 import './chat.css';
 import EmojiPicker from 'emoji-picker-react';
 import { useEffect, useRef } from 'react';
+import { onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import { useChatStore } from '../../lib/chatStore';
+import { useUserStore } from '../../lib/userStore';
+import upload from '../../lib/upload';
 const Chat = () => {
+    const [chat, setChat] = React.useState();
+    const [open, setOpen] = React.useState(false);
+    const [text, setText] = React.useState("");
+    const [img, setImg] = React.useState({
+        file: null,
+        url: ""
+    });
+    const { chatId, user } = useChatStore();
+    const { currentUser } = useUserStore();
 
     const endRef = useRef(null);
 
@@ -10,11 +24,94 @@ const Chat = () => {
         endRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [])
 
-    const [open, setOpen] = React.useState(false);
-    const [text, setText] = React.useState("");
+
+    useEffect(() => {
+        const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
+            setChat(res.data());
+
+        });
+        return () => {
+            unSub();
+        }
+    }, [chatId])
+
+    console.log(chat);
+
     const handleEmoji = (e) => {
         setText((prev) => prev + e.emoji);
         setOpen(false)
+    }
+
+    const handleImg = (e) => {
+        if (e.target.files[0]) {
+
+            setImg({
+                file: e.target.files[0],
+                url: URL.createObjectURL(e.target.files[0])
+            })
+        }
+    }
+
+    const handleSend = async () => {
+        if (text == "") return;
+
+        let imgUrl = null;
+
+        try {
+
+            if (img.file) {
+                imgUrl = await upload(img.file);
+            }
+            await updateDoc(doc(db, "chats", chatId), {
+                messages: arrayUnion({
+                    senderId: currentUser.id,
+                    text,
+                    createdAt: new Date(),
+                    ...(imgUrl && { img: imgUrl }),
+                })
+            });
+
+            if (!user || !user.id) {
+                console.error("User is undefined or missing ID.");
+                return;
+            }
+
+            const userIDs = [currentUser.id, user.id];
+
+            userIDs.forEach(async (id) => {
+
+                const userChatsRef = doc(db, "userChats", id);
+                const userChatsSnapshot = await getDoc(userChatsRef);
+
+                if (userChatsSnapshot.exists()) {
+                    const userChatsData = userChatsSnapshot.data();
+
+                    const chatIndex = userChatsData.chats.findIndex((c) => c.chatId === chatId);
+
+                    userChatsData.chats[chatIndex].lastMessage = {
+                        text: text,
+                        senderId: currentUser.id,
+                    };
+                    userChatsData.chats[chatIndex].isSeen = id === currentUser.id ? true : false;
+                    userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+
+                    await updateDoc(userChatsRef, {
+                        chats: userChatsData.chats,
+                    });
+                }
+            })
+
+        } catch (err) {
+            console.log(err);
+
+        }
+
+        setImg({
+            file: null,
+            url: ""
+        });
+        setText("");
     }
 
 
@@ -38,56 +135,29 @@ const Chat = () => {
 
             </div>
             <div className="center">
-                <div className="message">
-                    <img src="./avatar.png" alt="" />
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quis quia quos blanditiis quod voluptatibus, veniam nulla accusantium cupiditate omnis at eos ratione, nostrum id. Aspernatur suscipit molestias labore tempore.
+                {chat?.messages.map((message) => (
+                    <div className={message.senderId === currentUser.id ? "message own" : "message"} key={message?.createdAt}>
 
-                        </p>
-                        <span>1 min ago</span>
+
+                        <div className="texts">
+                            {message.img && <img src={message.img} alt="" />}
+                            <p>
+                                {message.text}
+                            </p>
+                            {/* <span>1 min ago</span> */}
+                        </div>
                     </div>
-                </div>
+                ))}
 
-                <div className="message own">
-
-
+                {img.url && <div className="message own ">
                     <div className="texts">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUPIfiGgUML8G3ZqsNLHfaCnZK3I5g4tJabQ&s" alt="" />
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quis quia quos blanditiis quod voluptatibus, veniam nulla accusantium cupiditate omnis at eos ratione, nostrum id. Aspernatur suscipit molestias labore tempore.
-
-                        </p>
-                        <span>1 min ago</span>
+                        <img src={img.url} alt="" />
                     </div>
-                </div>
+                </div>}
 
-                <div className="message">
-                    <img src="./avatar.png" alt="" />
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quis quia quos blanditiis quod voluptatibus, veniam nulla accusantium cupiditate omnis at eos ratione, nostrum id. Aspernatur suscipit molestias labore tempore.
 
-                        </p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
 
-                <div className="message own">
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quis quia quos blanditiis quod voluptatibus, veniam nulla accusantium cupiditate omnis at eos ratione, nostrum id. Aspernatur suscipit molestias labore tempore.
 
-                        </p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
-
-                <div className="message">
-                    <img src="./avatar.png" alt="" />
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quis quia quos blanditiis quod voluptatibus, veniam nulla accusantium cupiditate omnis at eos ratione, nostrum id. Aspernatur suscipit molestias labore tempore.
-
-                        </p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
 
                 <div ref={endRef}></div>
 
@@ -95,7 +165,14 @@ const Chat = () => {
             <div className="bottom">
 
                 <div className="icons">
-                    <img src="./img.png" alt="" />
+
+                    <label htmlFor="file">
+
+
+                        <img src="./img.png" alt="" />
+                    </label>
+
+                    <input type="file" id='file' style={{ display: "none" }} onChange={handleImg} />
                     <img src="./camera.png" alt="" />
                     <img src="./mic.png" alt="" />
                 </div>
@@ -112,7 +189,7 @@ const Chat = () => {
 
                 </div>
 
-                <button className='sendButton'>Send</button>
+                <button className='sendButton' onClick={handleSend}>Send</button>
 
 
 
