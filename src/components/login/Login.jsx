@@ -103,7 +103,9 @@ const Login = () => {
                     <button disabled={loading}> {loading ? "loading" : "Sign In"}</button>
                 </form>
             </div>
-            <div className="separator"></div>
+            <div className="separator">
+                <span>OR</span>
+            </div>
             <div className="item">
                 <h2>
                     Create a new account,
