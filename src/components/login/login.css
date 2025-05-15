@@ -8,10 +8,8 @@ body {
 .login {
     display: flex;
     justify-content: center;
-
     align-items: center;
     min-height: 100vh;
-    margin-left: 210px;
     padding: 20px;
 }
 
@@ -83,7 +81,12 @@ form button:disabled {
 }
 
 @media (max-width: 480px) {
-    .item {
-        padding: 30px 20px;
+    .login {
+        margin-left: 0;
+        margin-right: 0;   
+        margin-top: 20px;
+        margin-bottom: 20px;
+        padding: 0;
+         
     }
 }

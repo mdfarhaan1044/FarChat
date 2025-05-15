@@ -17,19 +17,19 @@ body {
 }
 
 .container {
-  width: 225vh;
-  height: 100vh;
+  /* width: 100%;
+  height: 100%; */
 
-  backdrop-filter: blur(10px);
-  /* <--- the blur magic */
-  -webkit-backdrop-filter: blur(10px);
-  /* for Safari */
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  /* backdrop-filter: blur(10px); */
+  
+  /* -webkit-backdrop-filter: blur(10px); */
+  
+  /* box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
 
   backdrop-filter: blur(19px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); */
   display: flex;
   align-items: center;
 }
