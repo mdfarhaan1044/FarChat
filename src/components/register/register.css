@@ -1,0 +1,159 @@
+/* Base Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Container */
+.login {
+
+    width: 90%;
+    max-width: 900px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 24px;
+    justify-content: center;
+}
+
+/* Forms */
+.item {
+    flex: 1 1 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.item h2 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: #333;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #4f46e5;
+    outline: none;
+}
+
+button {
+    padding: 12px;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    background-color: #3730a3;
+}
+
+/* File Upload */
+label[for="file"] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    background-color: #f3f4f6;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+}
+
+label[for="file"]:hover {
+    background-color: #e5e7eb;
+}
+
+label[for="file"] img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Separator */
+.separator {
+    width: 100%;
+    text-align: center;
+    position: relative;
+    margin: 10px 0;
+}
+
+.separator span {
+    background: white;
+    padding: 0 12px;
+    position: relative;
+    z-index: 1;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background-color: #d1d5db;
+    z-index: 0;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    .login {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .item {
+        width: 100%;
+    }
+
+    label[for="file"] {
+        justify-content: center;
+    }
+
+    label[for="file"] img {
+        width: 36px;
+        height: 36px;
+    }
+}

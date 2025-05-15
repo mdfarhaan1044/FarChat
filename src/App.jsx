@@ -1,20 +1,23 @@
-import List from "./components/list/List"
-import Detail from "./components/detail/Detail"
-import Chat from "./components/chat/Chat"
-import Login from "./components/login/Login";
-import Notification from "./components/notifications/Notifications";
 import { useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./lib/firebase";
 import { useUserStore } from "./lib/userStore";
 import { useChatStore } from "./lib/chatStore";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
+import List from "./components/list/List";
+import Detail from "./components/detail/Detail";
+import Chat from "./components/chat/Chat";
+import Login from "./components/login/Login";
+import Register from "./components/register/Register";
+import Notification from "./components/notifications/Notifications";
 
 const App = () => {
-
-
-
-
   const { chatId } = useChatStore();
   const { fetchUserInfo, isLoading, currentUser } = useUserStore();
 
@@ -26,34 +29,48 @@ const App = () => {
         fetchUserInfo(null);
       }
     });
-    return () => {
-      unSub();
-    }
-  }, [fetchUserInfo])
+    return () => unSub();
+  }, [fetchUserInfo]);
 
-  console.log(currentUser);
-
-  if (isLoading) return <div className="loading">Loading...</div>
+  if (isLoading) return <div className="loading">Loading...</div>;
 
   return (
-    <div className='container'>
+    <Router>
+      <div className="container">
+        <Routes>
+          {/* Protected App Route */}
+          <Route
+            path="/"
+            element={
+              currentUser ? (
+                <>
+                  <List />
+                  {chatId && <Chat />}
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
 
-      {currentUser ? (
-        <>
-          <List />
-          {chatId && <Chat />}
-          {/* {chatId && <Detail />} */}
+          {/* Public Routes */}
+          <Route
+            path="/login"
+            element={
+              !currentUser ? <Login /> : <Navigate to="/" />
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              !currentUser ? <Register /> : <Navigate to="/" />
+            }
+          />
+        </Routes>
+        <Notification />
+      </div>
+    </Router>
+  );
+};
 
-
-        </>
-
-
-
-      ) : <Login />}
-      <Notification />
-    </div>
-
-  )
-}
-
-export default App
+export default App;

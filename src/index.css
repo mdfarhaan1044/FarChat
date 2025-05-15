@@ -7,7 +7,8 @@
 }
 
 body {
-  background-color: rgba(53, 53, 170, 0.438);
+
+  background-image: url("https://i.pinimg.com/736x/ec/f2/57/ecf257e24648362b25563186975e7764.jpg");
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,14 +17,21 @@ body {
 }
 
 .container {
-  width: 220vh;
-  height: 95vh;
-  background-color: rgba(20, 31, 66, 0.685);
-  border-radius: 10px;
+  width: 225vh;
+  height: 100vh;
+
+  backdrop-filter: blur(10px);
+  /* <--- the blur magic */
+  -webkit-backdrop-filter: blur(10px);
+  /* for Safari */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
   backdrop-filter: blur(19px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   display: flex;
+  align-items: center;
 }
 
 .loading {
