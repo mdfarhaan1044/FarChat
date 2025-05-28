@@ -1,5 +1,5 @@
 import React from 'react';
-import './List.css';
+import './list.css';
 import Chatlist from './chatList/Chatlist';
 import Userinfo from './userInfo/Userinfo';
 
