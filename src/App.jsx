@@ -10,6 +10,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
+
 import List from "./components/list/List";
 import Detail from "./components/detail/Detail";
 import Chat from "./components/chat/Chat";
@@ -32,21 +33,37 @@ const App = () => {
     return () => unSub();
   }, [fetchUserInfo]);
 
-  if (isLoading) return <div className="loading">Loading...</div>;
+  if (isLoading) return (
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-900 via-pink-800 to-purple-900 flex items-center justify-center p-4">
+      <div className="text-center">
+        <div className="w-20 h-20 border-4 border-white/20 border-t-white/60 rounded-full animate-spin mx-auto mb-6"></div>
+        <h2 className="text-2xl font-bold text-white/90 mb-2 animate-pulse">Loading Chats</h2>
+        <p className="text-white/60">Please wait a moment...</p>
+      </div>
+    </div>
+  );
 
   return (
+
     <Router>
-      <div className="container">
+      <div className="w-full h-full">
         <Routes>
           {/* Protected App Route */}
           <Route
             path="/"
             element={
               currentUser ? (
-                <>
-                  <List />
-                  {chatId && <Chat />}
-                </>
+                <div className="flex flex-col md:flex-row w-full h-full">
+                  {/* Show only List if chat is not selected on small screens */}
+                  {(!chatId || window.innerWidth >= 768) && <List />}
+
+                  {/* Show Chat only if selected */}
+                  {chatId && (
+                    <div className={`w-full ${window.innerWidth < 768 ? 'block' : 'flex-1'}`}>
+                      <Chat />
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Navigate to="/login" />
               )

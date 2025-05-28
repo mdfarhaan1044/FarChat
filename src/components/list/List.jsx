@@ -1,5 +1,5 @@
 import React from 'react';
-import './list.css';
+import './List.css';
 import Chatlist from './chatList/Chatlist';
 import Userinfo from './userInfo/Userinfo';
 
@@ -9,8 +9,6 @@ const List = () => {
             <Userinfo />
             <Chatlist />
         </div>
-
-
     );
 }
 
