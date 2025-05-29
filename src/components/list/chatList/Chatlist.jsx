@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Adduser from './addUser/Adduser';
 import { useUserStore } from '../../../lib/userStore';
@@ -7,9 +7,9 @@ import { db } from '../../../lib/firebase';
 import { useChatStore } from '../../../lib/chatStore';
 
 const Chatlist = () => {
-    const [chats, setChats] = React.useState([]);
-    const [addMode, setAddMode] = React.useState(false);
-    const [input, setInput] = React.useState("");
+    const [chats, setChats] = useState([]);
+    const [addMode, setAddMode] = useState(false);
+    const [input, setInput] = useState("");
 
     const { currentUser } = useUserStore();
     const { chatId, changeChat } = useChatStore();
@@ -17,7 +17,7 @@ const Chatlist = () => {
 
     useEffect(() => {
         const unSub = onSnapshot(doc(db, "userChats", currentUser.id), async (res) => {
-            const items = res.data().chats;
+            const items = res.data()?.chats || [];
 
             const promises = items.map(async (item) => {
                 const userDocRef = doc(db, "users", item.receiverId);
@@ -31,17 +31,12 @@ const Chatlist = () => {
             setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
         });
 
-        return () => {
-            unSub();
-        };
+        return () => unSub();
     }, [currentUser.id]);
 
     const handleSelect = async (chat) => {
         changeChat(chat.chatId, chat.user);
-        const userChats = chats.map((items) => {
-            const { user, ...rest } = items;
-            return rest;
-        });
+        const userChats = chats.map(({ user, ...rest }) => rest);
         const chatIndex = userChats.findIndex((items) => items.chatId === chat.chatId);
         userChats[chatIndex].isSeen = true;
 
@@ -53,11 +48,13 @@ const Chatlist = () => {
         }
     };
 
-    const filteredChats = chats.filter((c) => c.user.username.toLowerCase().includes(input.toLowerCase()));
+    const filteredChats = chats.filter((c) =>
+        c.user?.username?.toLowerCase().includes(input.toLowerCase())
+    );
 
     return (
-        <div className="w-full h-full bg-gradient-to-r from-purple-900 to-pink-700 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-sm w-full mx-4 shadow-lg border border-white/10">
+        <div className="w-full  bg-gradient-to-r from-purple-900 to-pink-700 flex justify-center p-1">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full h-[75.7vh] overflow-y-auto no-scrollbar mx-4 shadow-lg border border-white/10">
                 {/* Header */}
                 <div className="text-center mb-6">
                     <h1 className="text-3xl font-bold text-white">Chat List</h1>
@@ -65,7 +62,7 @@ const Chatlist = () => {
                 </div>
 
                 {/* Search Bar */}
-                <div className="flex items-center space-x-3 mb-6">
+                <div className="flex items-center space-x-3 mb-4">
                     <div className="flex-1 relative">
                         <input
                             type="text"
@@ -108,29 +105,35 @@ const Chatlist = () => {
                     </button>
                 </div>
 
-                {/* Chat Items */}
-                <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {filteredChats.map((chat) => (
-                        <div
-                            key={chat.chatId}
-                            onClick={() => handleSelect(chat)}
-                            className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 ${chat?.isSeen ? 'bg-white/5' : 'bg-blue-500/50'
-                                } hover:bg-white/10`}
-                        >
-                            <img
-                                src={chat.user.avatar || "./avatar.png"}
-                                alt="user avatar"
-                                className="w-12 h-12 rounded-full border-2 border-white/20 object-cover mr-3"
-                            />
-                            <div className="flex-1">
-                                <span className="text-white font-medium">{chat.user.username}</span>
-                                <p className="text-white/70 text-sm truncate">{chat.lastMessage?.text || 'No messages yet'}</p>
-                            </div>
+                {/* Chat List */}
+                <div className="flex-1 space-y-3 overflow-y-auto pr-2">
+                    {filteredChats.length === 0 ? (
+                        <div className="text-center text-white/70 mt-10">
+                            No chats found. <br /> Click <span className="text-white font-semibold">+</span> to add user and start chatting.
                         </div>
-                    ))}
+                    ) : (
+                        filteredChats.map((chat) => (
+                            <div
+                                key={chat.chatId}
+                                onClick={() => handleSelect(chat)}
+                                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 ${chat?.isSeen ? 'bg-white/5' : 'bg-blue-500/50'
+                                    } hover:bg-white/10`}
+                            >
+                                <img
+                                    src={chat.user?.avatar || "./avatar.png"}
+                                    alt="user avatar"
+                                    className="w-12 h-12 rounded-full border-2 border-white/20 object-cover mr-3"
+                                />
+                                <div className="flex-1">
+                                    <span className="text-white font-medium">{chat.user?.username}</span>
+                                    <p className="text-white/70 text-sm truncate">{chat.lastMessage?.text || 'No messages yet'}</p>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
-                {/* Add User Component */}
+                {/* Add User */}
                 {addMode && (
                     <div className="mt-6 border-t border-white/20 pt-4">
                         <Adduser onClose={() => setAddMode(false)} />

@@ -46,7 +46,7 @@ const App = () => {
   return (
 
     <Router>
-      <div className="w-full h-full">
+      <div className="w-full h-full no-scrollbar overflow-hidden">
         <Routes>
           {/* Protected App Route */}
           <Route

@@ -1,8 +1,18 @@
 @import 'tailwindcss';
 
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
 
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
 
+html,
 body {
     display: block !important;
-
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }

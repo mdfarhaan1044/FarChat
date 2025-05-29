@@ -6,8 +6,8 @@ const UserInfo = () => {
     const { currentUser } = useUserStore();
 
     return (
-        <div className=" w-full h-full bg-gradient-to-r from-purple-900 to-pink-700 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-sm w-full mx-4 shadow-lg border border-white/10">
+        <div className=" w-full flex justify-center bg-gradient-to-r from-purple-900 to-pink-700  p-1 ">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full mx-4 shadow-lg border border-white/10">
                 {/* User Info */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-4">

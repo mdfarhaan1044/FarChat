@@ -132,8 +132,8 @@ const Chat = () => {
     };
 
     return (
-        <div className=" bg-gradient-to-r from-purple-900 to-pink-700 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl max-w-md w-full mx-4 shadow-lg border border-white/10 flex flex-col h-[80vh]">
+        <div className=" min-h-screen bg-gradient-to-r from-pink-700 to-purple-900 flex items-center justify-center p-4">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl w-full mx-4 shadow-lg border border-white/10 flex flex-col h-[94vh]">
                 {/* Top Section: User Info */}
                 <div className="p-4 border-b border-white/20">
                     <div className="flex items-center justify-between">
@@ -165,7 +165,7 @@ const Chat = () => {
                 </div>
 
                 {/* Center Section: Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                <div className="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar">
                     {chat?.messages?.map((message, index) => {
                         const isOwnMessage = message.senderId === currentUser.id;
                         return (
