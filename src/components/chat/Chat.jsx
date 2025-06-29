@@ -5,7 +5,8 @@ import { db } from '../../lib/firebase';
 import { useChatStore } from '../../lib/chatStore';
 import { useUserStore } from '../../lib/userStore';
 import upload from '../../lib/upload';
-
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Image, Smile, ArrowLeft, Download } from 'lucide-react';
 
 const Chat = () => {
     const setChatId = useChatStore((state) => state.setChatId);
@@ -131,120 +132,202 @@ const Chat = () => {
         setText("");
     };
 
-    return (
-        <div className=" min-h-screen bg-gradient-to-r from-pink-700 to-purple-900 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl w-full mx-4 shadow-lg border border-white/10 flex flex-col h-[94vh]">
-                {/* Top Section: User Info */}
-                <div className="p-4 border-b border-white/20">
-                    <div className="flex items-center justify-between">
-                        <button
-                            onClick={() => setChatId(null)}
-                            className="md:hidden flex items-center text-white/70 hover:text-white transition-all duration-200"
-                        >
-                            <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M15 19l-7-7 7-7"
-                                />
-                            </svg>
-                            Back
-                        </button>
-                        <div className="flex items-center space-x-3">
-                            <img
-                                src={user?.avatar || "./avatar.png"}
-                                alt="user avatar"
-                                className="w-12 h-12 rounded-full border-2 border-white/20 object-cover"
-                            />
-                            <div>
-                                <h2 className="text-xl font-semibold text-white">{user?.username}</h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    const messageVariants = {
+        hidden: { opacity: 0, y: 20, scale: 0.8 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: {
+                duration: 0.4,
+                type: "spring",
+                stiffness: 200
+            }
+        }
+    };
 
-                {/* Center Section: Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar">
-                    {chat?.messages?.map((message, index) => {
-                        const isOwnMessage = message.senderId === currentUser.id;
-                        return (
-                            <div
-                                key={index}
-                                className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+    return (
+        <motion.div 
+            className="min-h-screen animated-bg flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            <motion.div 
+                className="glass rounded-3xl w-full mx-4 shadow-2xl border border-white/20 flex flex-col h-[94vh] backdrop-blur-xl"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, type: "spring" }}
+            >
+                {/* Top Section: User Info */}
+                <motion.div 
+                    className="p-6 border-b border-white/20"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="flex items-center justify-between">
+                        <motion.button
+                            onClick={() => setChatId(null)}
+                            className="md:hidden flex items-center text-white/70 hover:text-white transition-all duration-200 group"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <ArrowLeft className="w-6 h-6 mr-2 group-hover:-translate-x-1 transition-transform" />
+                            Back
+                        </motion.button>
+                        <motion.div 
+                            className="flex items-center space-x-4"
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <motion.div
+                                className="relative avatar-pulse"
+                                whileHover={{ scale: 1.1 }}
+                                transition={{ duration: 0.2 }}
                             >
-                                <div
-                                    className={`max-w-[70%] p-3 rounded-lg ${isOwnMessage
-                                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                                        : 'bg-white/20 text-white'
-                                        }`}
-                                >
-                                    {message.img && (
-                                        <div className="relative mb-2">
-                                            <img
-                                                src={message.img}
-                                                alt="chat image"
-                                                className="max-w-full rounded-lg"
-                                            />
-                                            <a
-                                                href={message.img}
-                                                download={`image_${message.createdAt?.seconds || Date.now()}.jpg`}
-                                                className="absolute bottom-2 right-2 bg-white/30 hover:bg-white/50 text-white p-1 rounded-full text-sm transition-all duration-200"
-                                            >
-                                                ⬇
-                                            </a>
-                                        </div>
-                                    )}
-                                    {message.text && <p className="text-sm">{message.text}</p>}
-                                    {message.createdAt?.seconds && (
-                                        <div className="flex items-center justify-end mt-1 space-x-1">
-                                            <span className="text-xs text-white/70">
-                                                {new Date(message.createdAt.seconds * 1000).toLocaleTimeString([], {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </span>
-                                            {isOwnMessage && (
-                                                <span className={`text-xs ${message.isSeen ? 'text-blue-300' : 'text-white/50'}`}>
-                                                    {message.isSeen ? '✓✓' : '✓'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
+                                <img
+                                    src={user?.avatar || "./avatar.png"}
+                                    alt="user avatar"
+                                    className="w-14 h-14 rounded-full border-2 border-white/20 object-cover shadow-lg"
+                                />
+                            </motion.div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-white neon-text">{user?.username}</h2>
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span className="text-white/60 text-sm">Online</span>
                                 </div>
                             </div>
-                        );
-                    })}
+                        </motion.div>
+                    </div>
+                </motion.div>
+
+                {/* Center Section: Messages */}
+                <motion.div 
+                    className="flex-1 p-6 overflow-y-auto space-y-4 custom-scrollbar"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                    <AnimatePresence>
+                        {chat?.messages?.map((message, index) => {
+                            const isOwnMessage = message.senderId === currentUser.id;
+                            return (
+                                <motion.div
+                                    key={index}
+                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                                    variants={messageVariants}
+                                    initial="hidden"
+                                    animate="visible"
+                                    exit="hidden"
+                                    layout
+                                >
+                                    <motion.div
+                                        className={`max-w-[70%] p-4 rounded-2xl message-bubble ${
+                                            isOwnMessage
+                                                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
+                                                : 'bg-white/20 text-white backdrop-blur-sm shadow-lg'
+                                        }`}
+                                        whileHover={{ scale: 1.02 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        {message.img && (
+                                            <motion.div 
+                                                className="relative mb-3"
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <img
+                                                    src={message.img}
+                                                    alt="chat image"
+                                                    className="max-w-full rounded-xl shadow-md"
+                                                />
+                                                <motion.a
+                                                    href={message.img}
+                                                    download={`image_${message.createdAt?.seconds || Date.now()}.jpg`}
+                                                    className="absolute bottom-3 right-3 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full text-sm transition-all duration-200 backdrop-blur-sm"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                </motion.a>
+                                            </motion.div>
+                                        )}
+                                        {message.text && (
+                                            <motion.p 
+                                                className="text-sm leading-relaxed"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3, delay: 0.1 }}
+                                            >
+                                                {message.text}
+                                            </motion.p>
+                                        )}
+                                        {message.createdAt?.seconds && (
+                                            <motion.div 
+                                                className="flex items-center justify-end mt-2 space-x-2"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3, delay: 0.2 }}
+                                            >
+                                                <span className="text-xs text-white/70">
+                                                    {new Date(message.createdAt.seconds * 1000).toLocaleTimeString([], {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                                {isOwnMessage && (
+                                                    <motion.span 
+                                                        className={`text-xs ${message.isSeen ? 'text-blue-300' : 'text-white/50'}`}
+                                                        animate={message.isSeen ? { scale: [1, 1.2, 1] } : {}}
+                                                        transition={{ duration: 0.3 }}
+                                                    >
+                                                        {message.isSeen ? '✓✓' : '✓'}
+                                                    </motion.span>
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </motion.div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
 
                     {img.url && (
-                        <div className="flex justify-end">
-                            <div className="max-w-[70%] p-3 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white">
-                                <img src={img.url} alt="preview" className="max-w-full rounded-lg" />
+                        <motion.div 
+                            className="flex justify-end"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <div className="max-w-[70%] p-4 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg">
+                                <img src={img.url} alt="preview" className="max-w-full rounded-xl" />
                             </div>
-                        </div>
+                        </motion.div>
                     )}
 
                     <div ref={endRef}></div>
-                </div>
+                </motion.div>
 
                 {/* Bottom Section: Input */}
-                <div className="p-4 border-t border-white/20">
-                    <div className="flex items-center space-x-3">
-                        <label htmlFor="file" className="cursor-pointer">
-                            <svg
-                                className="w-6 h-6 text-white/70 hover:text-white transition-all duration-200"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828L17 10.828V15m0 0H9m6-8V3H3v18h18V7h-6z"
-                                />
-                            </svg>
-                        </label>
+                <motion.div 
+                    className="p-6 border-t border-white/20"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                    <div className="flex items-center space-x-4">
+                        <motion.label 
+                            htmlFor="file" 
+                            className="cursor-pointer"
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <Image className="w-6 h-6 text-white/70 hover:text-white transition-all duration-200" />
+                        </motion.label>
                         <input
                             type="file"
                             id="file"
@@ -253,47 +336,54 @@ const Chat = () => {
                         />
 
                         <div className="flex-1 relative">
-                            <input
+                            <motion.input
                                 type="text"
                                 placeholder={isCurrentUserBlocked || isReceiverBlocked ? "You can't send a message" : 'Type your message...'}
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 disabled={isCurrentUserBlocked || isReceiverBlocked}
-                                className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 disabled:opacity-50"
+                                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-300 backdrop-blur-sm"
+                                whileFocus={{ scale: 1.02 }}
                             />
                         </div>
 
-                        <div className="relative">
-                            <svg
+                        <motion.div className="relative">
+                            <motion.button
                                 onClick={() => setOpen((prev) => !prev)}
-                                className="w-6 h-6 text-white/70 hover:text-white cursor-pointer transition-all duration-200"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                                className="text-white/70 hover:text-white transition-all duration-200"
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                whileTap={{ scale: 0.9 }}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                            <div className="absolute bottom-12 right-0">
-                                <EmojiPicker open={open} onEmojiClick={handleEmoji} />
-                            </div>
-                        </div>
+                                <Smile className="w-6 h-6" />
+                            </motion.button>
+                            <AnimatePresence>
+                                {open && (
+                                    <motion.div 
+                                        className="absolute bottom-12 right-0"
+                                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <EmojiPicker open={open} onEmojiClick={handleEmoji} />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
 
-                        <button
+                        <motion.button
                             onClick={handleSend}
                             disabled={isCurrentUserBlocked || isReceiverBlocked}
-                            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed btn-glow"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                         >
-                            Send
-                        </button>
+                            <Send className="w-5 h-5" />
+                        </motion.button>
                     </div>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            </motion.div>
+        </motion.div>
     );
 };
 

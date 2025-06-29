@@ -2,13 +2,17 @@ import React from 'react';
 import { db } from '../../../../lib/firebase';
 import { arrayUnion, collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { useUserStore } from '../../../../lib/userStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, UserPlus, X, User, Check } from 'lucide-react';
 
 const Adduser = ({ onClose }) => {
     const [user, setUser] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
     const { currentUser } = useUserStore();
 
     const handleSearch = async (e) => {
         e.preventDefault();
+        setLoading(true);
         const formData = new FormData(e.target);
         const username = formData.get('username');
 
@@ -24,6 +28,8 @@ const Adduser = ({ onClose }) => {
             }
         } catch (err) {
             console.log(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -68,76 +74,203 @@ const Adduser = ({ onClose }) => {
         if (onClose) onClose();
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0, scale: 0.8, y: 50 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100,
+                staggerChildren: 0.1
+            }
+        },
+        exit: {
+            opacity: 0,
+            scale: 0.8,
+            y: 50,
+            transition: { duration: 0.3 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.4, type: "spring" }
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 z-50">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-sm w-full mx-4 shadow-lg border border-teal-500/20 relative mt-24">
-                {/* Close Button */}
-                <button
-                    onClick={handleClose}
-                    className="absolute top-3 right-3 text-teal-300 hover:text-teal-200 transition-all duration-200"
+        <AnimatePresence>
+            <motion.div 
+                className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 z-50 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+            >
+                <motion.div 
+                    className="glass rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-white/20 relative mt-24 backdrop-blur-xl"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
                 >
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {/* Close Button */}
+                    <motion.button
+                        onClick={handleClose}
+                        className="absolute top-4 right-4 text-white/70 hover:text-white transition-all duration-200 p-2 rounded-full hover:bg-white/10"
+                        whileHover={{ scale: 1.1, rotate: 90 }}
+                        whileTap={{ scale: 0.9 }}
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                        />
-                    </svg>
-                </button>
+                        <X className="w-6 h-6" />
+                    </motion.button>
 
-                {/* Header */}
-                <div className="text-center mb-6">
-                    <h1 className="text-3xl font-bold text-white">Add a User</h1>
-                    <p className="text-teal-200 text-sm mt-1">Search for a user to start chatting</p>
-                </div>
+                    {/* Header */}
+                    <motion.div className="text-center mb-8" variants={itemVariants}>
+                        <motion.div
+                            className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4"
+                            whileHover={{ scale: 1.1, rotate: 360 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <UserPlus className="w-8 h-8 text-white" />
+                        </motion.div>
+                        <motion.h1 
+                            className="text-3xl font-bold text-white mb-2 neon-text"
+                            animate={{ opacity: [0.8, 1, 0.8] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                        >
+                            Add a User
+                        </motion.h1>
+                        <p className="text-white/70 text-lg">Search for a user to start chatting</p>
+                    </motion.div>
 
-                {/* Search Form */}
-                <form onSubmit={handleSearch} className="space-y-4">
-                    <div>
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            name="username"
-                            className="w-full px-4 py-2 rounded-lg bg-white/10 border border-teal-500/30 text-white placeholder-teal-200/50 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold py-2 rounded-lg hover:from-teal-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200"
-                    >
-                        Search
-                    </button>
-                </form>
-
-                {/* User Result */}
-                {user && (
-                    <div className="mt-6 border-t border-teal-500/20 pt-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <img
-                                    src={user.avatar || "./avatar.png"}
-                                    alt="user avatar"
-                                    className="w-12 h-12 rounded-full border-2 border-teal-500/20 object-cover"
-                                />
-                                <span className="text-white font-medium">{user.username}</span>
+                    {/* Search Form */}
+                    <motion.form onSubmit={handleSearch} className="space-y-6" variants={itemVariants}>
+                        <motion.div
+                            className="relative group"
+                            whileHover={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-white/50 group-focus-within:text-pink-400 transition-colors" />
                             </div>
-                            <button
-                                onClick={handleAdd}
-                                className="bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:from-teal-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200"
+                            <input
+                                type="text"
+                                placeholder="Enter username..."
+                                name="username"
+                                className="w-full pl-10 pr-4 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                            />
+                        </motion.div>
+                        <motion.button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-4 rounded-xl hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed btn-glow"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center">
+                                    <motion.div
+                                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-3"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    />
+                                    Searching...
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    <Search className="w-5 h-5 mr-2" />
+                                    Search
+                                </div>
+                            )}
+                        </motion.button>
+                    </motion.form>
+
+                    {/* User Result */}
+                    <AnimatePresence>
+                        {user && (
+                            <motion.div 
+                                className="mt-8 border-t border-white/20 pt-6"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.4 }}
                             >
-                                Add User
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+                                <motion.div 
+                                    className="flex items-center justify-between p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10"
+                                    whileHover={{ scale: 1.02 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <div className="flex items-center space-x-4">
+                                        <motion.div
+                                            className="relative"
+                                            whileHover={{ scale: 1.1 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <img
+                                                src={user.avatar || "./avatar.png"}
+                                                alt="user avatar"
+                                                className="w-14 h-14 rounded-full border-2 border-white/20 object-cover shadow-lg"
+                                            />
+                                            <motion.div
+                                                className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"
+                                                animate={{ scale: [1, 1.2, 1] }}
+                                                transition={{ duration: 2, repeat: Infinity }}
+                                            />
+                                        </motion.div>
+                                        <div>
+                                            <motion.span 
+                                                className="text-white font-semibold text-lg block"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                {user.username}
+                                            </motion.span>
+                                            <span className="text-white/60 text-sm">Available for chat</span>
+                                        </div>
+                                    </div>
+                                    <motion.button
+                                        onClick={handleAdd}
+                                        className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all duration-300 btn-glow flex items-center space-x-2"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <Check className="w-5 h-5" />
+                                        <span>Add</span>
+                                    </motion.button>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* No User Found */}
+                    {user === null && (
+                        <motion.div 
+                            className="mt-8 text-center text-white/60"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <motion.div
+                                className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            >
+                                <User className="w-8 h-8 text-white/50" />
+                            </motion.div>
+                            <p className="text-lg">No user found</p>
+                            <p className="text-sm mt-2">Try searching with a different username</p>
+                        </motion.div>
+                    )}
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
     );
 };
 
